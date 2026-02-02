@@ -82,9 +82,10 @@ function App() {
       // โหลดข้อมูลใหม่จาก Server เพื่อความชัวร์
       fetchData(false);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Sync error:", error);
-      alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูล \nกรุณาตรวจสอบว่าได้ปิด RLS ใน Supabase หรือยัง?');
+      // แสดง Error จริงจาก Supabase
+      alert(`เกิดข้อผิดพลาดในการนำเข้าข้อมูล:\n${error.message || JSON.stringify(error)}`);
     } finally {
       setIsSyncing(false);
     }
@@ -145,14 +146,15 @@ function App() {
         
         try {
           await api.updatePhoneData(updatedEntry);
-        } catch (e) {
-          console.warn("API Error, updating local state only");
+          // Optimistic Update
+          setPhoneData(prev => prev.map(item => 
+            item.id === editingEntry.id ? updatedEntry : item
+          ));
+          closeForm();
+        } catch (e: any) {
+          console.error(e);
+          alert(`ไม่สามารถแก้ไขข้อมูลได้:\n${e.message || "Unknown error"}`);
         }
-        
-        // Optimistic Update
-        setPhoneData(prev => prev.map(item => 
-          item.id === editingEntry.id ? updatedEntry : item
-        ));
       } else {
         // Add
         const newEntry: PhoneEntry = {
@@ -169,14 +171,14 @@ function App() {
           // Optimistic Update
           setPhoneData(prev => [...prev, newEntry]);
           closeForm();
-        } catch (e) {
+        } catch (e: any) {
            console.error(e);
-           alert("เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล\nกรุณาตรวจสอบ Console Log");
-           // ถ้าบันทึกไม่สำเร็จ ไม่ต้องอัปเดตหน้าจอ หรือจะแจ้งเตือนเฉยๆ ก็ได้
+           // แก้ไข: แสดง Error จริงๆ จาก Supabase
+           alert(`บันทึกไม่สำเร็จ:\n${e.message || "ตรวจสอบสิทธิ์การเข้าถึง (RLS) หรือโครงสร้างข้อมูล"}`);
         }
       }
     } catch (error) {
-      alert('เกิดข้อผิดพลาดในการทำงาน');
+      alert('เกิดข้อผิดพลาดในการทำงานของระบบ');
     } finally {
       setIsSaving(false);
     }
@@ -192,15 +194,15 @@ function App() {
       try {
         try {
           await api.deletePhoneData(deleteTargetId);
-        } catch (e) {
-          console.warn("API Error, deleting from local state only");
+          setPhoneData(prev => prev.filter(item => item.id !== deleteTargetId));
+          if (isFormOpen && editingEntry?.id === deleteTargetId) {
+            closeForm();
+          }
+          setDeleteTargetId(null);
+        } catch (e: any) {
+          console.error("API Error", e);
+          alert(`ลบข้อมูลไม่สำเร็จ:\n${e.message}`);
         }
-        
-        setPhoneData(prev => prev.filter(item => item.id !== deleteTargetId));
-        if (isFormOpen && editingEntry?.id === deleteTargetId) {
-          closeForm();
-        }
-        setDeleteTargetId(null);
       } catch (error) {
         alert('เกิดข้อผิดพลาดในการลบข้อมูล');
       } finally {
