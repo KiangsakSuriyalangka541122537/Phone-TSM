@@ -31,13 +31,17 @@ export const api = {
   // เพิ่มข้อมูลทีละรายการ (สำหรับกดปุ่มเพิ่มเอง)
   addPhoneData: async (entry: PhoneEntry) => {
     try {
-      const { id, building, department, number } = entry;
+      // ใช้ .insert สำหรับการเพิ่มข้อมูลใหม่ เพื่อความชัดเจนและถูกต้อง
+      // ส่ง entry ทั้งก้อนไปเลย เพื่อให้รวม created_at ด้วย
       const { data, error } = await supabase
         .from(TABLE_NAME)
-        .upsert([{ id, building, department, number }])
+        .insert([entry])
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase Insert Error:", error.message);
+        throw error;
+      }
       return data;
     } catch (error) {
       console.error('Error adding data:', error);

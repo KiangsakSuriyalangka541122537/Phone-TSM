@@ -159,21 +159,24 @@ function App() {
           id: Date.now().toString(),
           building: formData.building!,
           department: formData.department!,
-          number: formData.number!
+          number: formData.number!,
+          created_at: new Date().toISOString() // เพิ่มวันที่ปัจจุบัน
         };
         
         try {
           await api.addPhoneData(newEntry);
+          // ถ้าสำเร็จ (ไม่ error)
+          // Optimistic Update
+          setPhoneData(prev => [...prev, newEntry]);
+          closeForm();
         } catch (e) {
-           console.warn("API Error, updating local state only");
+           console.error(e);
+           alert("เกิดข้อผิดพลาดในการบันทึกข้อมูลลงฐานข้อมูล\nกรุณาตรวจสอบ Console Log");
+           // ถ้าบันทึกไม่สำเร็จ ไม่ต้องอัปเดตหน้าจอ หรือจะแจ้งเตือนเฉยๆ ก็ได้
         }
-        
-        // Optimistic Update
-        setPhoneData(prev => [...prev, newEntry]);
       }
-      closeForm();
     } catch (error) {
-      alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      alert('เกิดข้อผิดพลาดในการทำงาน');
     } finally {
       setIsSaving(false);
     }
