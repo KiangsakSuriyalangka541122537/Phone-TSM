@@ -1,5 +1,6 @@
 {
   "name": "Book-Phone",
   "description": "เบอร์โทรศัพท์ภายใน",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Phone, Search, History, Plus, Edit2, Trash2, MapPin, Building2, PhoneCall, ChevronDown, X, AlertTriangle, Loader2, RefreshCw, CloudUpload, CheckCircle2, Download, Github } from 'lucide-react';
+import { Phone, Search, History, Plus, Edit2, Trash2, MapPin, Building2, PhoneCall, ChevronDown, X, AlertTriangle, Loader2, RefreshCw, CloudUpload, CheckCircle2 } from 'lucide-react';
 import { PhoneEntry, SearchHistoryItem } from './types';
 import { INITIAL_PHONE_DATA } from './constants';
 import Button from './components/Button';
@@ -89,44 +89,6 @@ function App() {
     } finally {
       setIsSyncing(false);
     }
-  };
-
-  // Export CSV Logic
-  const handleExportCSV = () => {
-    if (phoneData.length === 0) {
-      alert("ไม่มีข้อมูลที่จะส่งออก");
-      return;
-    }
-
-    // 1. Prepare Headers matches Supabase DB columns
-    const headers = ["id", "building", "department", "number", "created_at"];
-
-    // 2. Map Data to CSV Rows (Escaping quotes and handling commas)
-    const rows = phoneData.map(item => [
-      `"${item.id}"`,
-      `"${(item.building || '').replace(/"/g, '""')}"`,
-      `"${(item.department || '').replace(/"/g, '""')}"`,
-      `"${(item.number || '').replace(/"/g, '""')}"`,
-      `"${item.created_at || new Date().toISOString()}"`
-    ]);
-
-    // 3. Combine into CSV String
-    const csvContent = [
-      headers.join(','), 
-      ...rows.map(e => e.join(','))
-    ].join('\n');
-
-    // 4. Create Blob with BOM (Byte Order Mark) for Thai Support in Excel
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    
-    // 5. Create Download Link
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `phonebook_backup_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   // Handlers
@@ -318,12 +280,6 @@ function App() {
             </div>
             
             <div className="flex items-center gap-2">
-               {/* Export CSV Button */}
-               <Button variant="ghost" onClick={handleExportCSV} className="hidden md:inline-flex text-slate-600 hover:text-teal-700">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export CSV
-               </Button>
-
                {/* Manual Sync Button */}
                {showSyncBanner && (
                  <Button variant="secondary" onClick={handleSyncDefaultData} className="hidden md:inline-flex text-amber-600 border-amber-200 hover:bg-amber-50">
@@ -331,17 +287,6 @@ function App() {
                     Sync Data
                  </Button>
                )}
-
-               {/* GitHub Button (Optional placeholder) */}
-               <a 
-                 href="https://github.com" 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 className="hidden md:inline-flex items-center justify-center rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 bg-transparent text-slate-600 hover:bg-slate-100 focus:ring-slate-300 px-4 py-2 text-base"
-               >
-                 <Github className="w-4 h-4 mr-2" />
-                 GitHub
-               </a>
 
                <Button variant="ghost" onClick={() => setIsHistoryOpen(true)} className="hidden md:inline-flex">
                   <History className="w-4 h-4 mr-2" />
@@ -379,9 +324,6 @@ function App() {
           </div>
           
           <div className="md:hidden mt-2 flex flex-wrap gap-2 justify-between items-center">
-             <button onClick={handleExportCSV} className="text-sm font-medium text-slate-600 flex items-center">
-                <Download className="w-4 h-4 mr-1" /> Export CSV
-             </button>
              {showSyncBanner && (
                  <button onClick={handleSyncDefaultData} className="text-sm font-medium text-amber-600 flex items-center">
                     <CloudUpload className="w-4 h-4 mr-1" /> Sync Data
